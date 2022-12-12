@@ -48,9 +48,12 @@ const allItemsHaveTheSameType = (arr) => {
 };
 
 const getRealType = (value) => {
-    if (Number.isNaN(value)) return 'NaN';
-    else if (!Number.isFinite(value) && typeof value === 'number') return 'Infinity';
-    else return Object.prototype.toString.call(value).slice(8, -1).toLowerCase();
+    if (Number.isNaN(value)) {
+        return 'NaN';
+    } else if (!Number.isFinite(value) && typeof value === 'number') {
+        return 'Infinity';
+    }
+    return Object.prototype.toString.call(value).slice(8, -1).toLowerCase();
 };
 
 const getRealTypesOfItems = (arr) => arr.map(getRealType);
@@ -67,6 +70,7 @@ const everyItemHasAUniqueRealType = (arr) => {
 
 const countRealTypes = (arr) => {
     const map = arr.reduce((acc, item) => {
+        // eslint-disable-next-line no-unused-expressions, no-plusplus
         acc[getRealType(item)] ? acc[getRealType(item)]++ : (acc[getRealType(item)] = 1);
         return acc;
     }, {});
