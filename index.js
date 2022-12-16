@@ -6,18 +6,8 @@ const testBlock = (name) => {
 };
 
 const areEqual = (a, b) => {
-    if (a instanceof Array && b instanceof Array) {
-        if (a.length !== b.length) {
-            return false;
-        }
-
-        for (let i = 0; i < a.length; i++) {
-            if (!areEqual(a[i], b[i])) {
-                return false;
-            }
-        }
-
-        return true;
+    if (Array.isArray(a) && Array.isArray(b)) {
+        return a.length === b.length && a.flat().every((el, i) => el === b.flat()[i]);
     }
 
     return a === b;
@@ -53,29 +43,36 @@ const getRealType = (value) => {
     } else if (!Number.isFinite(value) && typeof value === 'number') {
         return 'Infinity';
     }
-    return Object.prototype.toString.call(value).slice(8, -1).toLowerCase();
+
+    const str = Object.prototype.toString.call(value).slice(8, -1);
+    return str.charAt(0).toLowerCase() + str.slice(1);
 };
 
 const getRealTypesOfItems = (arr) => arr.map(getRealType);
 
 const everyItemHasAUniqueRealType = (arr) => {
-    const set = new Set();
-    arr.forEach((item) => {
-        const type = getRealType(item);
-        set.add(type);
-    });
+    const itemsRealType = getRealTypesOfItems(arr);
+    const uniqueItems = new Set(itemsRealType);
 
-    return set.size === arr.length;
+    return uniqueItems.size === itemsRealType.length;
 };
 
 const countRealTypes = (arr) => {
     const map = arr.reduce((acc, item) => {
+        const realType = getRealType(item);
         // eslint-disable-next-line no-unused-expressions, no-plusplus
-        acc[getRealType(item)] ? acc[getRealType(item)]++ : (acc[getRealType(item)] = 1);
+        acc[realType] ? acc[realType]++ : (acc[realType] = 1);
         return acc;
     }, {});
 
-    return Object.entries(map).sort();
+    return Object.entries(
+        Object.keys(map)
+            .sort()
+            .reduce((acc, key) => {
+                acc[key] = map[key];
+                return acc;
+            }, {})
+    );
 };
 
 // Tests
@@ -124,6 +121,11 @@ const knownTypes = [
     /^[0-9]+/,
     new Set(),
     10n,
+    async () => 'Я состою из двух слов',
+    new Map(),
+    new Promise((resolve) => {
+        resolve('А кто тут у нас дал обещание?)');
+    }),
 ];
 
 test('Check basic types', getTypesOfItems(knownTypes), [
@@ -141,6 +143,9 @@ test('Check basic types', getTypesOfItems(knownTypes), [
     'object',
     'object',
     'bigint',
+    'function',
+    'object',
+    'object',
 ]);
 
 test('Check real types', getRealTypesOfItems(knownTypes), [
@@ -155,9 +160,12 @@ test('Check real types', getRealTypesOfItems(knownTypes), [
     'NaN',
     'Infinity',
     'date',
-    'regexp',
+    'regExp',
     'set',
-    'bigint',
+    'bigInt',
+    'asyncFunction',
+    'map',
+    'promise',
 ]);
 
 testBlock('everyItemHasAUniqueRealType');
@@ -176,17 +184,16 @@ test('Count unique types of array items', countRealTypes([true, null, !null, !!n
     ['object', 1],
 ]);
 
-test('Counted unique types are sorted', countRealTypes([{}, null, true, !null, !!null]), [
-    ['boolean', 3],
-    ['null', 1],
-    ['object', 1],
-]);
-
-test('Custom test by TinaevNK', countRealTypes([{}, true, 'lost', {}, new Set(), [4, 8, 15, 16, 23, 42], new Date()]), [
-    ['array', 1],
-    ['boolean', 1],
-    ['date', 1],
-    ['object', 2],
-    ['set', 1],
-    ['string', 1],
-]);
+test(
+    'Counted unique types are sorted',
+    countRealTypes([{}, null, true, !null, !!null, 'lost', {}, new Set(), [4, 8, 15, 16, 23, 42], new Date()]),
+    [
+        ['array', 1],
+        ['boolean', 3],
+        ['date', 1],
+        ['null', 1],
+        ['object', 2],
+        ['set', 1],
+        ['string', 1],
+    ]
+);
