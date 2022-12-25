@@ -7,7 +7,10 @@ const testBlock = (name) => {
 
 const areEqual = (a, b) => {
     if (Array.isArray(a) && Array.isArray(b)) {
-        return a.length === b.length && a.flat().every((el, i) => el === b.flat()[i]);
+        return (
+            a.length === b.length &&
+            a.every((el, i) => (Array.isArray(el) && Array.isArray(b[i]) ? areEqual(el, b[i]) : el === b[i]))
+        );
     }
 
     return a === b;
@@ -57,23 +60,16 @@ const everyItemHasAUniqueRealType = (arr) => {
     return uniqueItems.size === itemsRealType.length;
 };
 
-const countRealTypes = (arr) => {
-    const map = arr.reduce((acc, item) => {
-        const realType = getRealType(item);
-        // eslint-disable-next-line no-unused-expressions, no-plusplus
-        acc[realType] ? acc[realType]++ : (acc[realType] = 1);
-        return acc;
-    }, {});
+const countRealTypes = (arr) =>
+    Object.entries(
+        arr.reduce((acc, item) => {
+            const realType = getRealType(item);
 
-    return Object.entries(
-        Object.keys(map)
-            .sort()
-            .reduce((acc, key) => {
-                acc[key] = map[key];
-                return acc;
-            }, {})
-    );
-};
+            acc[realType] = (acc[realType] || 0) + 1;
+
+            return acc;
+        }, {})
+    ).sort(([typeA], [typeB]) => typeA.localeCompare(typeB));
 
 // Tests
 
