@@ -1,18 +1,23 @@
 {
   "name": "js-part-0",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "index.ts",
   "repository": "git@github.com:ipetropolsky/js-part-0.git",
   "author": "'Ivan Petropolsky' <i.petropolsky@hh.ru>",
   "license": "MIT",
   "scripts": {
-    "postinstall": "ln -sf ./githooks/* .git/hooks"
+    "start": "tsc --outDir ./build && node ./build/index.js",
+    "typecheck": "tsc --noEmit",
+    "postinstall": "cp ./githooks/* .git/hooks"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "5.48.0",
+    "@typescript-eslint/parser": "5.48.0",
     "eslint": "8.29.0",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-prettier": "4.2.1",
     "lint-staged": "13.1.0",
-    "prettier": "2.8.0"
+    "prettier": "2.8.0",
+    "typescript": "4.9.4"
   }
 }
